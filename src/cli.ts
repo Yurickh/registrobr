@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 import chalk from "chalk";
-import ora from "ora";
 import escape from "entities";
+import ora from "ora";
 import fetchAvailableDomains from ".";
 import domains from "../domains.json";
 
 type TLD = keyof typeof domains;
 
-interface Data {
+interface IData {
   available: boolean;
   reason: string;
   fqdn: string;
@@ -18,7 +18,7 @@ interface Data {
 
 let domain = process.argv[2] || "";
 
-function parse(data: Data, tld: TLD) {
+function parse(data: IData, tld: TLD) {
   if (data.available) {
     console.log(
       chalk.green(`Domínio ${chalk.bold(data.fqdn)} está disponível`)
@@ -49,7 +49,7 @@ function isValidDomain(domain: string): TLD {
   ) as TLD;
 }
 
-function showSuggestions(data: Data) {
+function showSuggestions(data: IData) {
   if (data.suggestions && data.suggestions.length > 0) {
     console.log(chalk.yellow("Sugestões: "));
     data.suggestions.forEach(item => {
@@ -69,6 +69,7 @@ if (!domain) {
 }
 
 domain = domain.toLowerCase();
+
 const tld = isValidDomain(domain);
 if (!tld) {
   console.log(
@@ -89,10 +90,7 @@ if (hostname.length < 2 || hostname.length > 26) {
   process.exit(1);
 }
 
-if (
-  hostname.charAt(0) === "-" ||
-  hostname.charAt(hostname.length - 1) === "-"
-) {
+if (hostname.startsWith("-") || hostname.endsWith("-")) {
   console.log(
     chalk.red("O Hostname não deve conter hífen no ínicio ou final.")
   );
@@ -104,10 +102,10 @@ if (!Number.isNaN(Number(hostname))) {
   process.exit(1);
 }
 
-if (!hostname.match(/^[a-z0-9àáâãéêíóôõúüç]+$/)) {
+if (/[^a-z0-9àáâãéêíóôõúüç]/.test(hostname)) {
   console.log(
     chalk.red(
-      "O Hostname deve ser a-z, 0-9, hífen e os seguintes caracteres acentuados: à, á, â, ã, é, ê, í, ó, ô, õ, ú, ü, ç."
+      `O Hostname deve ser a-z, 0-9, hífen e os seguintes caracteres acentuados:à, á, â, ã, é, ê, í, ó, ô, õ, ú, ü, ç.`
     )
   );
   process.exit(1);
